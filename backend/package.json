@@ -9,6 +9,7 @@
     "dev": "nodemon server.js",
     "build": "echo 'Build completed'",
     "seed": "node seedData.js",
+    "fix-users": "node fixUsers.js",
     "seed-and-start": "node seedData.js && node server.js"
   },
   "engines": {

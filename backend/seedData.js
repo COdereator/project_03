@@ -130,17 +130,28 @@ const seedDatabase = async () => {
     console.log('Seeding products...');
     await Product.insertMany(products);
     
-    // Hash passwords and create users
+    // Create test users with properly hashed passwords
     console.log('Seeding users...');
-    for (const user of users) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(user.password, salt);
-      
-      await User.create({
-        ...user,
-        password: hashedPassword
-      });
-    }
+    
+    // First test user - IMPORTANT FOR TESTING
+    const testUserSalt = await bcrypt.genSalt(10);
+    const testUserHash = await bcrypt.hash('password123', testUserSalt);
+    await User.create({
+      _id: new mongoose.Types.ObjectId('000000000000000000000201'),
+      username: 'testuser',
+      email: 'test@example.com',
+      password: testUserHash
+    });
+    
+    // Second user - admin
+    const adminSalt = await bcrypt.genSalt(10);
+    const adminHash = await bcrypt.hash('admin123', adminSalt);
+    await User.create({
+      _id: new mongoose.Types.ObjectId('000000000000000000000202'),
+      username: 'admin',
+      email: 'admin@example.com',
+      password: adminHash
+    });
 
     console.log('Database seeded successfully!');
     console.log('Demo user credentials:');

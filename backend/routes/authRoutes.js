@@ -59,7 +59,7 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    console.log('Login request received:', { email });
+    console.log('Login request received:', { email, passwordProvided: !!password });
 
     // Find user
     const user = await User.findOne({ email });
@@ -70,28 +70,18 @@ router.post('/login', async (req, res) => {
 
     console.log('User found:', { id: user._id, email: user.email });
 
-    // Try both methods for password verification
+    // Verify password using bcrypt directly
     let isMatch = false;
-    
-    // Method 1: Using bcrypt directly
     try {
       isMatch = await bcrypt.compare(password, user.password);
-      console.log('Password match using bcrypt.compare:', isMatch);
+      console.log('Password comparison result:', isMatch);
     } catch (compareError) {
-      console.error('Error comparing password with bcrypt:', compareError);
-    }
-    
-    // Method 2: Using the model method if Method 1 fails
-    if (!isMatch && typeof user.comparePassword === 'function') {
-      try {
-        isMatch = await user.comparePassword(password);
-        console.log('Password match using user.comparePassword:', isMatch);
-      } catch (modelCompareError) {
-        console.error('Error using user.comparePassword:', modelCompareError);
-      }
+      console.error('Error comparing password:', compareError);
+      return res.status(500).json({ message: 'Server error during authentication' });
     }
 
     if (!isMatch) {
+      console.log('Password does not match');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -102,7 +92,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    console.log('Login successful, token generated');
+    console.log('Login successful, token generated for user:', user.email);
 
     // Send response
     res.json({

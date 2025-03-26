@@ -22,12 +22,10 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? true // Allow all origins in production for now
-    : 'http://localhost:3000',
-  credentials: true,
+  origin: '*', // Allow all origins temporarily to debug
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false // Disable credentials to simplify CORS handling
 }));
 
 // Add body parser middleware with increased limit

@@ -5,56 +5,69 @@ import User from './models/User.js';
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ecommerce';
 
-const fixUsers = async () => {
+async function fixUsers() {
   try {
     console.log('Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB successfully');
 
-    // Check existing users
+    // Find all users
     const users = await User.find({});
     console.log(`Found ${users.length} users in database`);
 
-    if (users.length === 0) {
-      console.log('No users found, creating test users...');
+    for (const user of users) {
+      console.log(`Checking user: ${user.email}`);
+      console.log('Current password hash:', user.password);
       
-      // First test user
-      const testUserSalt = await bcrypt.genSalt(10);
-      const testUserHash = await bcrypt.hash('password123', testUserSalt);
-      await User.create({
-        username: 'testuser',
-        email: 'test@example.com',
-        password: testUserHash
-      });
-      
-      // Admin user
-      const adminSalt = await bcrypt.genSalt(10);
-      const adminHash = await bcrypt.hash('admin123', adminSalt);
-      await User.create({
-        username: 'admin',
-        email: 'admin@example.com',
-        password: adminHash
-      });
-      
-      console.log('Created test users successfully');
-    } else {
-      // Recreate users with proper password hashing
-      console.log('Updating existing users with properly hashed passwords...');
-      
-      for (const user of users) {
-        // Check if password is already hashed (longer than 20 chars typically)
-        if (user.password.length < 20) {
-          console.log(`Updating user ${user.email} with properly hashed password`);
-          const salt = await bcrypt.genSalt(10);
-          const hashedPassword = await bcrypt.hash(user.password, salt);
-          
-          user.password = hashedPassword;
-          await user.save();
-        } else {
-          console.log(`User ${user.email} already has a hashed password`);
+      // Check if password needs to be hashed (test for known test passwords)
+      const testPasswords = ['password123', 'admin123', 'test123'];
+      let passwordFixed = false;
+
+      for (const testPassword of testPasswords) {
+        try {
+          const isMatch = await bcrypt.compare(testPassword, user.password);
+          if (isMatch) {
+            console.log(`Password match found for ${user.email}`);
+            passwordFixed = true;
+            break;
+          }
+        } catch (e) {
+          // If bcrypt.compare fails, the password is likely not hashed
+          console.log(`Password comparison failed for ${user.email}, might need rehashing`);
         }
+      }
+
+      if (!passwordFixed) {
+        // If the password is not hashed or doesn't match test passwords, set it to a default
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('password123', salt);
+        user.password = hashedPassword;
+        await user.save();
+        console.log(`Reset password for user ${user.email} to 'password123'`);
+      }
+    }
+
+    // Create test users if they don't exist
+    const testUsers = [
+      { email: 'test@example.com', password: 'password123', username: 'testuser' },
+      { email: 'admin@example.com', password: 'admin123', username: 'admin' }
+    ];
+
+    for (const testUser of testUsers) {
+      const existingUser = await User.findOne({ email: testUser.email });
+      if (!existingUser) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(testUser.password, salt);
+        
+        const newUser = new User({
+          ...testUser,
+          password: hashedPassword
+        });
+        
+        await newUser.save();
+        console.log(`Created test user: ${testUser.email}`);
       }
     }
 
@@ -62,13 +75,12 @@ const fixUsers = async () => {
     console.log('Test users available:');
     console.log('Email: test@example.com, Password: password123');
     console.log('Email: admin@example.com, Password: admin123');
-    
-    mongoose.connection.close();
-    process.exit(0);
+
   } catch (error) {
     console.error('Error fixing users:', error);
-    process.exit(1);
+  } finally {
+    await mongoose.connection.close();
   }
-};
+}
 
 fixUsers(); 

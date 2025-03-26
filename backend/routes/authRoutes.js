@@ -56,7 +56,11 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    console.log('Login request received:', { email, passwordProvided: !!password });
+    console.log('Login request received:', { 
+      email, 
+      passwordProvided: !!password,
+      passwordLength: password ? password.length : 0
+    });
 
     // Find user
     const user = await User.findOne({ email });
@@ -65,11 +69,22 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    console.log('User found:', { id: user._id, email: user.email });
+    console.log('User found:', { 
+      id: user._id, 
+      email: user.email,
+      passwordHash: user.password,
+      passwordHashLength: user.password.length
+    });
 
     // Use the User model's comparePassword method
-    const isMatch = await user.comparePassword(password);
-    console.log('Password comparison result:', isMatch);
+    let isMatch = false;
+    try {
+      isMatch = await user.comparePassword(password);
+      console.log('Password comparison result:', isMatch);
+    } catch (compareError) {
+      console.error('Error comparing passwords:', compareError);
+      return res.status(500).json({ message: 'Error verifying credentials' });
+    }
 
     if (!isMatch) {
       console.log('Password does not match');

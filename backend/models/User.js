@@ -28,18 +28,28 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function(next) {
   try {
     // Only hash the password if it has been modified (or is new)
-    if (!this.isModified('password')) return next();
+    if (!this.isModified('password')) {
+      console.log('Password not modified, skipping hashing');
+      return next();
+    }
 
-    // Generate a salt
-    const salt = await bcrypt.genSalt(10);
+    console.log('Hashing password for user:', this.email);
     
-    // Hash the password along with our new salt
+    // Generate a salt with cost factor 10
+    const salt = await bcrypt.genSalt(10);
+    console.log('Generated salt');
+    
+    // Hash the password
     const hashedPassword = await bcrypt.hash(this.password, salt);
+    console.log('Password hashed successfully');
     
     // Override the cleartext password with the hashed one
     this.password = hashedPassword;
+    console.log('New password hash:', this.password);
+    
     next();
   } catch (error) {
+    console.error('Error in password hashing:', error);
     next(error);
   }
 });
@@ -47,11 +57,18 @@ userSchema.pre('save', async function(next) {
 // Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   try {
+    console.log('Comparing passwords for user:', this.email);
+    console.log('Stored hash:', this.password);
+    console.log('Candidate password length:', candidatePassword.length);
+    
     // Use bcrypt to compare the provided password with the hashed password
     const isMatch = await bcrypt.compare(candidatePassword, this.password);
+    console.log('Password comparison result:', isMatch);
+    
     return isMatch;
   } catch (error) {
-    throw new Error('Error comparing passwords');
+    console.error('Error comparing passwords:', error);
+    throw error;
   }
 };
 

@@ -13,93 +13,50 @@ async function fixUsers() {
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB successfully');
 
-    // Find all users
-    const users = await User.find({});
-    console.log(`Found ${users.length} users in database`);
+    // Delete existing test user if it exists
+    await User.deleteOne({ email: 'test@example.com' });
+    console.log('Deleted existing test user if any');
 
-    for (const user of users) {
-      console.log(`Checking user: ${user.email}`);
-      console.log('Current password hash:', user.password);
-      
-      // Check if password needs to be hashed (test for known test passwords)
-      const testPasswords = ['password123', 'admin123', 'test123'];
-      let passwordFixed = false;
+    // Create new test user with plain password (will be hashed by pre-save middleware)
+    const testUser = new User({
+      username: 'testuser',
+      email: 'test@example.com',
+      password: 'password123'
+    });
 
-      for (const testPassword of testPasswords) {
-        try {
-          const isMatch = await bcrypt.compare(testPassword, user.password);
-          if (isMatch) {
-            console.log(`Password match found for ${user.email}`);
-            passwordFixed = true;
-            break;
-          }
-        } catch (e) {
-          // If bcrypt.compare fails, the password is likely not hashed
-          console.log(`Password comparison failed for ${user.email}, might need rehashing`);
-        }
-      }
+    // Save user (this will trigger the pre-save middleware to hash the password)
+    await testUser.save();
+    console.log('Created new test user:', {
+      id: testUser._id,
+      email: testUser.email,
+      passwordHash: testUser.password
+    });
 
-      if (!passwordFixed) {
-        // If the password is not hashed or doesn't match test passwords, set it to a default
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('password123', salt);
-        user.password = hashedPassword;
-        await user.save();
-        console.log(`Reset password for user ${user.email} to 'password123'`);
-      }
-    }
+    // Verify the password using the model's method
+    const verifyResult = await testUser.comparePassword('password123');
+    console.log('Password verification result:', verifyResult);
 
-    // Create test users if they don't exist
-    const testUsers = [
-      { email: 'test@example.com', password: 'password123', username: 'testuser' },
-      { email: 'admin@example.com', password: 'admin123', username: 'admin' }
-    ];
-
-    for (const testUser of testUsers) {
-      const existingUser = await User.findOne({ email: testUser.email });
-      
-      // Always update the test@example.com user's password
-      if (testUser.email === 'test@example.com') {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(testUser.password, salt);
-        
-        if (existingUser) {
-          existingUser.password = hashedPassword;
-          await existingUser.save();
-          console.log(`Updated password for existing user: ${testUser.email}`);
-        } else {
-          const newUser = new User({
-            ...testUser,
-            password: hashedPassword
-          });
-          await newUser.save();
-          console.log(`Created test user: ${testUser.email}`);
-        }
-      }
-      // For other users, only create if they don't exist
-      else if (!existingUser) {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(testUser.password, salt);
-        
-        const newUser = new User({
-          ...testUser,
-          password: hashedPassword
-        });
-        
-        await newUser.save();
-        console.log(`Created test user: ${testUser.email}`);
+    // List all users for verification
+    const allUsers = await User.find({});
+    console.log('\nAll users in database:');
+    for (const user of allUsers) {
+      console.log(`User: ${user.email}, Hash: ${user.password}`);
+      // Verify each user's password
+      if (user.email === 'test@example.com') {
+        const testResult = await user.comparePassword('password123');
+        console.log(`Password verification for ${user.email}:`, testResult);
       }
     }
 
-    console.log('Database users verified and fixed!');
-    console.log('Test users available:');
-    console.log('Email: test@example.com, Password: password123');
-    console.log('Email: admin@example.com, Password: admin123');
+    console.log('\nTest user credentials:');
+    console.log('Email: test@example.com');
+    console.log('Password: password123');
 
   } catch (error) {
     console.error('Error fixing users:', error);
   } finally {
     await mongoose.connection.close();
+    console.log('Database connection closed');
   }
 }
 

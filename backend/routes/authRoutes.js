@@ -19,18 +19,15 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Create new user
+    // Create new user - password will be hashed by the pre-save middleware
     const newUser = new User({
       username,
       email,
-      password: hashedPassword
+      password
     });
 
     const savedUser = await newUser.save();
+    console.log('New user created:', { id: savedUser._id, email: savedUser.email });
 
     // Generate JWT
     const token = jwt.sign(
@@ -70,15 +67,9 @@ router.post('/login', async (req, res) => {
 
     console.log('User found:', { id: user._id, email: user.email });
 
-    // Verify password using bcrypt directly
-    let isMatch = false;
-    try {
-      isMatch = await bcrypt.compare(password, user.password);
-      console.log('Password comparison result:', isMatch);
-    } catch (compareError) {
-      console.error('Error comparing password:', compareError);
-      return res.status(500).json({ message: 'Server error during authentication' });
-    }
+    // Use the User model's comparePassword method
+    const isMatch = await user.comparePassword(password);
+    console.log('Password comparison result:', isMatch);
 
     if (!isMatch) {
       console.log('Password does not match');

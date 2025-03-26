@@ -1,0 +1,19 @@
+{
+  "name": "e-commerce-full-stack",
+  "version": "1.0.0",
+  "description": "Full stack e-commerce application",
+  "scripts": {
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install",
+    "install": "npm run install-backend && npm run install-frontend",
+    "build-backend": "cd backend && npm run build",
+    "build-frontend": "cd frontend && npm run build",
+    "build": "npm install && npm run build-backend && npm run build-frontend",
+    "start-backend": "cd backend && npm start",
+    "start": "npm run start-backend",
+    "seed": "cd backend && node seedData.js"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}

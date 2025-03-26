@@ -22,10 +22,12 @@ const __dirname = path.dirname(__filename);
 
 // Middleware
 app.use(cors({
-  origin: '*', // Allow all origins temporarily to debug
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://e-commerce-7zsn.onrender.com', 'https://e-commerce-7zsn.onrender.com/'] 
+    : 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: false // Disable credentials to simplify CORS handling
+  credentials: true // Enable credentials
 }));
 
 // Add body parser middleware with increased limit

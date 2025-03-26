@@ -47,10 +47,10 @@ export const AuthProvider = ({ children }) => {
       const response = await fetch(`${config.API_URL}/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
-          // Removing extra headers to simplify request
+          'Content-Type': 'application/json',
+          ...config.headers
         },
-        // Remove credentials to avoid preflight CORS issues
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 

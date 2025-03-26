@@ -57,7 +57,27 @@ async function fixUsers() {
 
     for (const testUser of testUsers) {
       const existingUser = await User.findOne({ email: testUser.email });
-      if (!existingUser) {
+      
+      // Always update the test@example.com user's password
+      if (testUser.email === 'test@example.com') {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(testUser.password, salt);
+        
+        if (existingUser) {
+          existingUser.password = hashedPassword;
+          await existingUser.save();
+          console.log(`Updated password for existing user: ${testUser.email}`);
+        } else {
+          const newUser = new User({
+            ...testUser,
+            password: hashedPassword
+          });
+          await newUser.save();
+          console.log(`Created test user: ${testUser.email}`);
+        }
+      }
+      // For other users, only create if they don't exist
+      else if (!existingUser) {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(testUser.password, salt);
         

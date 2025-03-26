@@ -41,17 +41,25 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      console.log('Attempting login with:', { email, passwordLength: password.length });
-      console.log('API URL:', `${config.API_URL}/auth/login`);
+      // Trim the inputs to remove any whitespace
+      const trimmedEmail = email.trim();
+      const trimmedPassword = password.trim();
+
+      console.log('Attempting login with:', { 
+        email: trimmedEmail, 
+        passwordLength: trimmedPassword.length,
+        passwordValue: trimmedPassword // temporary for debugging
+      });
       
       const response = await fetch(`${config.API_URL}/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          ...config.headers
+          'Content-Type': 'application/json'
         },
-        credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email: trimmedEmail, 
+          password: trimmedPassword 
+        })
       });
 
       console.log('Login response status:', response.status);

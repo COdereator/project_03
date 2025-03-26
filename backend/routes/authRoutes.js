@@ -56,16 +56,27 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    // Validate input
+    if (!email || !password) {
+      console.log('Missing credentials:', { email: !!email, password: !!password });
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    // Trim inputs
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
+
     console.log('Login request received:', { 
-      email, 
-      passwordProvided: !!password,
-      passwordLength: password ? password.length : 0
+      email: trimmedEmail,
+      passwordProvided: true,
+      passwordLength: trimmedPassword.length,
+      passwordValue: trimmedPassword // temporary for debugging
     });
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: trimmedEmail });
     if (!user) {
-      console.log('User not found:', email);
+      console.log('User not found:', trimmedEmail);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -76,39 +87,42 @@ router.post('/login', async (req, res) => {
       passwordHashLength: user.password.length
     });
 
-    // Use the User model's comparePassword method
-    let isMatch = false;
+    // Direct bcrypt comparison for debugging
     try {
-      isMatch = await user.comparePassword(password);
-      console.log('Password comparison result:', isMatch);
+      const directBcryptCompare = await bcrypt.compare(trimmedPassword, user.password);
+      console.log('Direct bcrypt comparison result:', directBcryptCompare);
+      
+      // Use the User model's comparePassword method
+      const modelCompareResult = await user.comparePassword(trimmedPassword);
+      console.log('Model comparePassword result:', modelCompareResult);
+
+      if (!directBcryptCompare && !modelCompareResult) {
+        console.log('Password does not match using either method');
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // If we get here, at least one comparison method worked
+      const token = jwt.sign(
+        { userId: user._id }, 
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: '24h' }
+      );
+
+      console.log('Login successful, token generated for user:', user.email);
+
+      // Send response
+      res.json({
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email
+        }
+      });
     } catch (compareError) {
       console.error('Error comparing passwords:', compareError);
       return res.status(500).json({ message: 'Error verifying credentials' });
     }
-
-    if (!isMatch) {
-      console.log('Password does not match');
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate JWT
-    const token = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
-    );
-
-    console.log('Login successful, token generated for user:', user.email);
-
-    // Send response
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email
-      }
-    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });

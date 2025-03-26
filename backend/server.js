@@ -74,15 +74,23 @@ app.use('/api/orders', orderRoutes);
 
 // For production, serve static files and handle client-side routing
 if (process.env.NODE_ENV === 'production') {
-  // Serve static files from the frontend build directory
-  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  console.log('Running in production mode - serving static files');
   
-  // Handle client-side routing - return index.html for all routes not handled by the API
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+  // First, serve static files from the public directory
+  app.use(express.static(path.join(__dirname, 'public')));
+  
+  // Handle client-side routing - return index.html for all non-API routes
+  app.get('*', (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    console.log('Serving index.html for path:', req.path);
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 } else {
-  // For development, serve static files from the public directory
+  // For development, still serve static files from the public directory
+  console.log('Running in development mode');
   app.use(express.static(path.join(__dirname, 'public')));
 }
 

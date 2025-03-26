@@ -15,13 +15,12 @@ npm install
 # Build frontend
 echo "Building frontend..."
 npm run build
-# Frontend build script already copies files to backend/public
+
+# The frontend build script already copies the build output to backend/public
 
 echo "Setting up environment for production..."
 cd ..
 export NODE_ENV=production
 
-echo "Starting backend server..."
-cd backend
-node seedData.js # Optional: seed the database on first deployment
-node server.js 
+# No need to run the server here - Render will do that with the start command
+echo "Deployment preparation completed successfully!" 

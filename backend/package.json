@@ -13,7 +13,8 @@
     "backup": "node backupData.js",
     "restore": "node restoreData.js",
     "clear-db": "node clearDatabase.js",
-    "post-deploy": "node postDeploy.js"
+    "post-deploy": "node postDeploy.js",
+    "seed-and-start": "node postDeploy.js && node server.js"
   },
   "engines": {
     "node": ">=14"

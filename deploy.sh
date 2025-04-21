@@ -22,5 +22,9 @@ echo "Setting up environment for production..."
 cd ..
 export NODE_ENV=production
 
-# No need to run the server here - Render will do that with the start command
+# Run post-deployment script to ensure all data is properly seeded
+echo "Running post-deployment data setup..."
+cd backend
+npm run post-deploy
+
 echo "Deployment preparation completed successfully!" 

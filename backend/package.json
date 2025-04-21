@@ -9,8 +9,11 @@
     "dev": "nodemon server.js",
     "build": "echo 'Build completed'",
     "seed": "node seedData.js",
-    "fix-users": "node fixUsers.js",
-    "seed-and-start": "node seedData.js && node server.js"
+    "seed-sarees": "node seedSarees.js",
+    "backup": "node backupData.js",
+    "restore": "node restoreData.js",
+    "clear-db": "node clearDatabase.js",
+    "post-deploy": "node postDeploy.js"
   },
   "engines": {
     "node": ">=14"

@@ -98,18 +98,33 @@ const seedDatabase = async () => {
     await mongoose.connect(MONGODB_URI);
     console.log('Connected to MongoDB successfully');
 
-    // Clear existing data
-    console.log('Clearing existing data...');
-    await Category.deleteMany({});
-    await Product.deleteMany({});
+    // Check if data already exists
+    const categoryCount = await Category.countDocuments();
+    const productCount = await Product.countDocuments();
 
-    // Seed categories
-    console.log('Seeding categories...');
-    await Category.insertMany(categories);
+    if (categoryCount > 0 && productCount > 0) {
+      console.log('Database already contains data:');
+      console.log(`- ${categoryCount} categories`);
+      console.log(`- ${productCount} products`);
+      console.log('Skipping database seeding to preserve existing data.');
+      mongoose.connection.close();
+      return;
+    }
+
+    // Only clear and seed if database is empty
+    console.log('Database is empty. Starting seeding process...');
+
+    // Seed categories if needed
+    if (categoryCount === 0) {
+      console.log('Seeding categories...');
+      await Category.insertMany(categories);
+    }
     
-    // Seed products
-    console.log('Seeding products...');
-    await Product.insertMany(products);
+    // Seed products if needed
+    if (productCount === 0) {
+      console.log('Seeding products...');
+      await Product.insertMany(products);
+    }
 
     console.log('Database seeded successfully!');
     

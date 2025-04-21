@@ -47,50 +47,7 @@ const categories = [
 ];
 
 // Define products based on the above categories
-const products = [
-  {
-    _id: new mongoose.Types.ObjectId('000000000000000000000101'),
-    name: 'Classic White T-Shirt',
-    price: 29.99,
-    description: 'A comfortable and versatile white t-shirt made from 100% cotton. Perfect for everyday wear.',
-    category: new mongoose.Types.ObjectId('000000000000000000000001'),
-    images: [
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    ],
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    colors: ['White', 'Black', 'Gray'],
-    features: ['Premium cotton', 'Comfortable fit', 'Machine washable'],
-    stock: 100,
-  },
-  {
-    _id: new mongoose.Types.ObjectId('000000000000000000000102'),
-    name: 'Slim Fit Jeans',
-    price: 59.99,
-    description: 'Modern slim fit jeans with a perfect stretch for maximum comfort.',
-    category: new mongoose.Types.ObjectId('000000000000000000000002'),
-    images: [
-      'https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    ],
-    sizes: ['28', '30', '32', '34', '36'],
-    colors: ['Blue', 'Black', 'Gray'],
-    features: ['Stretch denim', 'Slim fit', 'High-quality stitching'],
-    stock: 50,
-  },
-  {
-    _id: new mongoose.Types.ObjectId('000000000000000000000103'),
-    name: 'Wireless Headphones',
-    price: 129.99,
-    description: 'Premium wireless headphones with noise cancellation.',
-    category: new mongoose.Types.ObjectId('000000000000000000000003'),
-    images: [
-      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    ],
-    sizes: ['One Size'],
-    colors: ['Black', 'White', 'Rose Gold'],
-    features: ['Noise cancellation', '30-hour battery', 'Bluetooth 5.0'],
-    stock: 75,
-  }
-];
+const products = [];
 
 const seedDatabase = async () => {
   try {

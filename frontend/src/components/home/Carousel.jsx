@@ -6,21 +6,21 @@ const carouselItems = [
     id: 1,
     title: 'Summer Collection 2024',
     description: 'Discover the latest trends in summer fashion',
-    image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
+    image: 'https://www.jollysilks.com/media/cache/1088x0/grid/kanchipuram-saree/kanch-evo-1_1603099341.webp',
     link: '/shop'
   },
   {
     id: 2,
     title: 'New Arrivals',
     description: 'Check out our latest collection of premium clothing',
-    image: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
+    image: 'https://sttylme.com/cdn/shop/articles/for-app-black-saree-landscape.jpg?v=1712299510',
     link: '/shop'
   },
   {
     id: 3,
     title: 'Exclusive Deals',
     description: 'Up to 50% off on selected items',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80',
+    image: 'https://thesareestory.in/wp-content/uploads/2020/10/A4C871D1-322F-4CFC-A415-3CECBA5C0C4D-scaled.jpeg',
     link: '/shop'
   }
 ]

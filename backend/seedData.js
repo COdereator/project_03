@@ -2,8 +2,6 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Product from './models/Product.js';
 import Category from './models/Category.js';
-import User from './models/User.js';
-import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -94,22 +92,6 @@ const products = [
   }
 ];
 
-// Define demo users
-const users = [
-  {
-    _id: new mongoose.Types.ObjectId('000000000000000000000201'),
-    username: 'testuser',
-    email: 'test@example.com',
-    password: 'password123',
-  },
-  {
-    _id: new mongoose.Types.ObjectId('000000000000000000000202'),
-    username: 'admin',
-    email: 'admin@example.com',
-    password: 'admin123',
-  }
-];
-
 const seedDatabase = async () => {
   try {
     console.log('Connecting to MongoDB...');
@@ -120,7 +102,6 @@ const seedDatabase = async () => {
     console.log('Clearing existing data...');
     await Category.deleteMany({});
     await Product.deleteMany({});
-    await User.deleteMany({});
 
     // Seed categories
     console.log('Seeding categories...');
@@ -129,34 +110,8 @@ const seedDatabase = async () => {
     // Seed products
     console.log('Seeding products...');
     await Product.insertMany(products);
-    
-    // Create test users with properly hashed passwords
-    console.log('Seeding users...');
-    
-    // First test user - IMPORTANT FOR TESTING
-    const testUserSalt = await bcrypt.genSalt(10);
-    const testUserHash = await bcrypt.hash('password123', testUserSalt);
-    await User.create({
-      _id: new mongoose.Types.ObjectId('000000000000000000000201'),
-      username: 'testuser',
-      email: 'test@example.com',
-      password: testUserHash
-    });
-    
-    // Second user - admin
-    const adminSalt = await bcrypt.genSalt(10);
-    const adminHash = await bcrypt.hash('admin123', adminSalt);
-    await User.create({
-      _id: new mongoose.Types.ObjectId('000000000000000000000202'),
-      username: 'admin',
-      email: 'admin@example.com',
-      password: adminHash
-    });
 
     console.log('Database seeded successfully!');
-    console.log('Demo user credentials:');
-    console.log('Email: test@example.com, Password: password123');
-    console.log('Email: admin@example.com, Password: admin123');
     
     mongoose.connection.close();
   } catch (error) {
